@@ -133,7 +133,6 @@ Application performance is monitored using Azure Application Insights:
 <img width="1860" height="922" alt="{7BD7C035-9A3D-4579-8924-784AFDB7F95C}" src="https://github.com/user-attachments/assets/9b543ac7-c2d3-450e-929b-151c46cc7039" />
 <img width="1861" height="924" alt="{EB498B3A-FDFB-4BDF-BDD1-EDF80D07F56F}" src="https://github.com/user-attachments/assets/779758d6-8257-4933-a934-ad77fad66811" />
 <img width="1859" height="923" alt="{B3BB69CF-F5DB-471A-BE16-0BD743343814}" src="https://github.com/user-attachments/assets/6802b8d3-1379-45b6-ab23-709eb7252494" />
-<img width="1839" height="922" alt="{A7539707-52C1-4D6E-A394-EB06C4286AD4}" src="https://github.com/user-attachments/assets/110b7c99-4b31-40df-ac0c-9b05076be73f" />
 <img width="1469" height="715" alt="image" src="https://github.com/user-attachments/assets/7135b2a6-95df-4b76-95f9-4f81b2a091df" />
 <img width="1837" height="922" alt="{0EA93CBE-292E-46F8-96E3-D809E00411BA}" src="https://github.com/user-attachments/assets/22405bce-6ac2-4b4b-8027-c5739bfefdde" />
 <img width="1843" height="924" alt="{44C53D4C-29CD-44F6-9219-048D35E64467}" src="https://github.com/user-attachments/assets/4ad1e009-cd84-42ac-99e2-135dc7e620f1" />
@@ -141,10 +140,25 @@ Application performance is monitored using Azure Application Insights:
 ### 🌐 AZURE
 <img width="1483" height="720" alt="image" src="https://github.com/user-attachments/assets/6af2b44f-f1b1-4b52-bd1e-9644d798d7f4" />
 <img width="1486" height="722" alt="image" src="https://github.com/user-attachments/assets/9391186d-66fe-48eb-b427-e5b7a87b5996" />
-<img width="1860" height="923" alt="{27D3582F-5C4A-43A0-9C85-E2D0E3C7E5FE}" src="https://github.com/user-attachments/assets/713a98ab-ca6d-491c-821d-0443328908d4" />
-
+<img width="1489" height="720" alt="image" src="https://github.com/user-attachments/assets/f9f82624-e8b1-4082-97ef-75cdb252c886" />
 <img width="1486" height="721" alt="image" src="https://github.com/user-attachments/assets/177692a4-23cc-4b74-b843-8a922c024959" />
 <img width="1488" height="723" alt="image" src="https://github.com/user-attachments/assets/42a300e4-2672-4b03-8c1e-50e195a62904" />
+
+## 🚀 Deployment Strategy
+
+The application is deployed to Azure App Service using two approaches:
+
+- **Staging Deployment (Deployment Slots)**
+  - New versions are deployed to a staging environment
+  - Verified before release
+  - Promoted to production using **slot swapping**, ensuring zero-downtime deployment
+
+<img width="1278" height="318" alt="{79CDC830-C1B9-4A58-9226-FA188BCFB072}" src="https://github.com/user-attachments/assets/e0994650-d2d3-46d1-b5db-d85345c5b7de" />
+<img width="1487" height="356" alt="image" src="https://github.com/user-attachments/assets/39135db3-b72e-40ae-89fb-a36880b8a015" />
+
+- **Direct CI/CD Deployment**
+  - Automated deployment from GitHub Actions to production on push to the main branch
+<img width="1280" height="96" alt="{74B22483-90C3-4CB6-A843-DCC82A85B417}" src="https://github.com/user-attachments/assets/8d976f39-6024-4843-a781-eaf606a88276" />
 
 
 
