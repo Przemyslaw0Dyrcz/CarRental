@@ -140,12 +140,13 @@ Application performance is monitored using Azure Application Insights:
 
 ### 🌐 AZURE
 <img width="1483" height="720" alt="image" src="https://github.com/user-attachments/assets/6af2b44f-f1b1-4b52-bd1e-9644d798d7f4" />
+<img width="1486" height="722" alt="image" src="https://github.com/user-attachments/assets/9391186d-66fe-48eb-b427-e5b7a87b5996" />
+<img width="1860" height="923" alt="{27D3582F-5C4A-43A0-9C85-E2D0E3C7E5FE}" src="https://github.com/user-attachments/assets/713a98ab-ca6d-491c-821d-0443328908d4" />
 
-<img width="1857" height="924" alt="{5CFE6A7B-152B-47A6-9C4D-9029E27044CC}" src="https://github.com/user-attachments/assets/45d8d13a-b5fc-4616-88e0-6335ab70f624" />
+<img width="1486" height="721" alt="image" src="https://github.com/user-attachments/assets/177692a4-23cc-4b74-b843-8a922c024959" />
+<img width="1488" height="723" alt="image" src="https://github.com/user-attachments/assets/42a300e4-2672-4b03-8c1e-50e195a62904" />
 
-<img width="1485" height="721" alt="image" src="https://github.com/user-attachments/assets/877c9a22-f9cb-42fd-b876-1fd48b3c1ddf" />
-<img width="1842" height="919" alt="{506CD99A-5152-4853-8AEE-5A1EF166DCF9}" src="https://github.com/user-attachments/assets/fc192d13-35e6-447e-9a62-b883d91903f7" />
-<img width="1858" height="924" alt="{2A67D939-EF17-4E63-ACC8-08C89A13BF05}" src="https://github.com/user-attachments/assets/cb12323a-74d3-4e5a-9092-28f74d2c54bd" />
+
 
 
 ## 🧪 Future Improvements
