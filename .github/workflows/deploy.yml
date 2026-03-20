@@ -20,9 +20,9 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - run: dotnet restore
-    - run: dotnet build --configuration Release --no-restore
-    - run: dotnet publish -c Release -o publish
+    - run: dotnet restore CarRental/CarRental.csproj
+    - run: dotnet build CarRental/CarRental.csproj --configuration Release --no-restore
+    - run: dotnet publish CarRental/CarRental.csproj -c Release -o publish
 
     - uses: actions/upload-artifact@v4
       with:
