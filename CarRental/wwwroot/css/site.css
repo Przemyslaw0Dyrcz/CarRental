@@ -1,0 +1,32 @@
+﻿body {
+    background-color: #f4f7f5;
+}
+
+.bg-admin {
+    background-color: #14532d !important;
+}
+
+.navbar-dark .nav-link {
+    color: #e6f4ea !important;
+    font-weight: 500;
+}
+
+    .navbar-dark .nav-link:hover {
+        color: #ffffff !important;
+        background-color: rgba(255,255,255,0.15);
+        border-radius: 6px;
+    }
+
+.navbar-dark .navbar-brand {
+    color: #ffffff !important;
+}
+
+.clickable {
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+    .clickable:hover {
+        transform: scale(1.04);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }

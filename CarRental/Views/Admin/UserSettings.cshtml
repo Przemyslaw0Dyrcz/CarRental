@@ -1,0 +1,82 @@
+﻿@model CarRental.ViewModels.SecuritySettingsViewModel
+
+<h2 class="mb-4">Security Settings</h2>
+
+@if (TempData["msg"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["msg"]
+    </div>
+}
+
+<form asp-action="UserSettings" method="post">
+
+    @Html.AntiForgeryToken()
+
+    <div class="card shadow-sm p-4">
+
+        <h5 class="mb-3">Brute Force Protection</h5>
+
+        <div class="form-check mb-3">
+            <input asp-for="EnableBruteForceProtection" class="form-check-input" />
+            <label asp-for="EnableBruteForceProtection" class="form-check-label">
+                Enable Brute Force Protection
+            </label>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="MaxLoginAttempts" class="form-label">
+                Max Failed Login Attempts (IP)
+            </label>
+            <input asp-for="MaxLoginAttempts" class="form-control" />
+            <small class="text-muted">
+                Number of failed login attempts allowed before IP is blocked
+            </small>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="IpWindowMinutes" class="form-label">
+                IP Attempt Window (minutes)
+            </label>
+            <input asp-for="IpWindowMinutes" class="form-control" />
+            <small class="text-muted">
+                Time window after which failed attempts reset
+            </small>
+        </div>
+
+        <hr />
+
+        <h5 class="mb-3">Account Lockout</h5>
+
+        <div class="mb-3">
+            <label asp-for="AccountLockoutAttempts" class="form-label">
+                Failed Attempts Before Account Lock
+            </label>
+            <input asp-for="AccountLockoutAttempts" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="LockoutMinutes" class="form-label">
+                Account Lock Duration (minutes)
+            </label>
+            <input asp-for="LockoutMinutes" class="form-control" />
+        </div>
+
+        <hr />
+
+        <h5 class="mb-3">Session Security</h5>
+
+        <div class="mb-3">
+            <label asp-for="SessionTimeoutMinutes" class="form-label">
+                Session Timeout (minutes)
+            </label>
+            <input asp-for="SessionTimeoutMinutes" class="form-control" />
+        </div>
+
+        <button class="btn btn-primary mt-2">
+            Save Security Settings
+        </button>
+
+    </div>
+
+</form>

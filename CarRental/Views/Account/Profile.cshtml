@@ -1,0 +1,65 @@
+@model CarRental.Models.ApplicationUser
+
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<div class="container mt-4">
+
+    <div class="card shadow-sm">
+
+        <div class="card-body">
+
+            <h2 class="mb-4">My Profile</h2>
+
+            <div class="row">
+
+                <div class="col-md-6">
+
+                    <p>
+                        <strong>Email:</strong> @Model.Email
+                    </p>
+
+                    <p>
+                        <strong>Full name:</strong> @Model.FullName
+                    </p>
+
+                    <p>
+                        <strong>User name:</strong> @Model.UserName
+                    </p>
+
+                </div>
+
+            </div>
+
+            <hr />
+
+            <div class="d-flex gap-2">
+
+                <a asp-action="ChangePassword"
+                   asp-controller="Account"
+                   class="btn btn-warning">
+
+                    Change password
+                </a>
+
+                <form asp-action="DeleteAccount" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <button type="submit"
+                            class="btn btn-danger"
+                            onclick="return confirm('Are you sure you want to delete your account?')">
+
+                        Delete account
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

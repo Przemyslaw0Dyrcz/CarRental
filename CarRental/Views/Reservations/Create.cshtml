@@ -1,0 +1,145 @@
+﻿@model CarRental.ViewModels.CreateReservationViewModel
+
+<h2 class="mb-4">Reserve Car</h2>
+
+<div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+<div class="row">
+
+    <!-- LEFT -->
+    <div class="col-md-4">
+
+        <div class="card shadow-sm">
+            <img src="/images/car-placeholder.png" class="card-img-top" />
+
+            <div class="card-body">
+                <h5>@Model.Brand @Model.Model</h5>
+                <p>@Model.Year</p>
+
+                <hr />
+
+                <p><strong>@Model.PricePerDay zł / day</strong></p>
+
+                <p>Total: <strong id="pricePreview">0 zł</strong></p>
+
+                <div class="alert alert-info">
+                    Selected: <strong id="selectedRange">None</strong>
+                </div>
+            </div>
+        </div>
+
+        <form asp-action="Create" method="post" class="mt-3">
+            <input type="hidden" asp-for="CarId" />
+
+            <!-- 🔥 KLUCZ -->
+            <input asp-for="StartDate" id="StartDate" type="hidden" />
+            <input asp-for="EndDate" id="EndDate" type="hidden" />
+
+            <button id="submitBtn" class="btn btn-success w-100" disabled>
+                Confirm Reservation
+            </button>
+        </form>
+
+    </div>
+
+    <!-- RIGHT -->
+    <div class="col-md-8">
+        <div class="card shadow-sm p-3">
+            <h5>Select dates</h5>
+            <div id="calendar"></div>
+
+            <div class="mt-3">
+                <span class="badge bg-danger">Reserved</span>
+                <span class="badge bg-primary ms-2">Your reservation</span>
+                <span class="badge bg-success ms-2">Selected</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet'>
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            let calendarEl = document.getElementById('calendar');
+            let pricePerDay = parseFloat("@Model.PricePerDay".replace(",", "."));
+
+            let selectedEvent = null;
+
+            let calendar = new FullCalendar.Calendar(calendarEl, {
+
+                initialView: 'dayGridMonth',
+                selectable: true,
+
+                events: '/Reservations/GetCalendarReservations?carId=@Model.CarId',
+
+                eventDisplay: 'background',
+
+                eventDidMount: function(info) {
+                    info.el.title = info.event.title +
+                        " (" + info.event.startStr + " → " + info.event.endStr + ")";
+                },
+
+                selectAllow: function (selectInfo) {
+
+                    let now = new Date();
+                    now.setHours(0,0,0,0);
+
+                    if (selectInfo.start < now)
+                        return false;
+
+                    let events = calendar.getEvents();
+
+                    for (let event of events) {
+                        if (
+                            selectInfo.start < event.end &&
+                            selectInfo.end > event.start
+                        ) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                },
+
+                select: function (info) {
+
+                    if (selectedEvent) {
+                        selectedEvent.remove();
+                    }
+
+                    selectedEvent = calendar.addEvent({
+                        start: info.start,
+                        end: info.end,
+                        display: 'background',
+                        color: '#52c41a'
+                    });
+
+                    let start = new Date(info.start);
+                    let end = new Date(info.end);
+
+                    let days = Math.round((end - start) / (1000 * 60 * 60 * 24));
+
+                    document.getElementById("StartDate").value = start.toISOString();
+                    document.getElementById("EndDate").value = end.toISOString();
+
+                    document.getElementById("selectedRange").innerText =
+                        info.startStr + " → " + info.endStr;
+
+                    document.getElementById("pricePreview").innerText =
+                        (days * pricePerDay) + " zł";
+
+                    document.getElementById("submitBtn").disabled = false;
+                },
+
+                height: 500
+            });
+
+            calendar.render();
+        });
+    </script>
+}

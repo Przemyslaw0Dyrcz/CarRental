@@ -1,0 +1,116 @@
+@model CarRental.Models.Car
+
+<div class="row">
+
+    <div class="col-md-5">
+
+        <div class="card shadow-sm">
+
+            <img src="/images/car-placeholder.png"
+                 class="card-img-top"
+                 style="height:250px; object-fit:cover;" />
+
+            <div class="card-body">
+
+                <h3>@Model.Brand @Model.Model</h3>
+                <p class="text-muted">@Model.Year</p>
+
+                <hr />
+
+                <h5 class="mb-2">@Model.PricePerDay z³ / day</h5>
+
+                <table class="table table-sm mt-3">
+                    <tbody>
+                        <tr>
+                            <td>Engine</td>
+                            <td><strong>@Model.EngineCapacity L</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Power</td>
+                            <td><strong>@Model.Horsepower HP</strong></td>
+                        </tr>
+                        <tr>
+                            <td>0–100 km/h</td>
+                            <td><strong>@Model.ZeroToHundred s</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Fuel consumption</td>
+                            <td><strong>@Model.FuelConsumption L/100km</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Seats</td>
+                            <td><strong>@Model.Seats</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Trunk</td>
+                            <td><strong>@Model.TrunkCapacity L</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <span class="badge
+                    @(Model.Status == CarRental.Models.CarStatus.Available ? "bg-success" :
+                                            Model.Status == CarRental.Models.CarStatus.Reserved ? "bg-danger" :
+                                            Model.Status == CarRental.Models.CarStatus.Maintenance ? "bg-warning" :
+                                            "bg-secondary")">
+                    @Model.Status
+                </span>
+
+                <a asp-controller="Reservations"
+                   asp-action="Create"
+                   asp-route-carId="@Model.Id"
+                   class="btn btn-success w-100 mt-3">
+                    Reserve this car
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-7">
+
+        <div class="card shadow-sm p-3">
+
+            <h5 class="mb-3">Availability</h5>
+
+            <div id="calendar"></div>
+
+            <div class="mt-3">
+                <span class="badge bg-danger">Reserved</span>
+                <span class="ms-2">Unavailable dates</span>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet'>
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        let calendarEl = document.getElementById('calendar');
+
+        if (!calendarEl) return;
+
+        let calendar = new FullCalendar.Calendar(calendarEl, {
+
+            initialView: 'dayGridMonth',
+
+            events: '/Reservations/GetCalendarReservations?carId=@Model.Id',
+
+            eventDisplay: 'background',
+            eventColor: '#ff4d4f',
+
+            height: 500
+
+        });
+
+        calendar.render();
+    });
+</script>

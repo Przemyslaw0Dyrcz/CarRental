@@ -1,0 +1,107 @@
+@model CarRental.ViewModels.EditUserViewModel
+@{
+    ViewData["Title"] = "Edit User";
+}
+
+<h2>Edit User</h2>
+
+<form asp-action="EditUser" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <div>
+        <label>Email</label>
+        <input asp-for="Email" />
+    </div>
+    <div>
+        <label>Full name</label>
+        <input asp-for="FullName" />
+    </div>
+    <div>
+        <label>Blocked</label>
+        <input asp-for="IsBlocked" type="checkbox" />
+    </div>
+    <div>
+        <label>Password validity (days, blank = default)</label>
+        <input asp-for="PasswordValidityDays" />
+    </div>
+
+    <hr />
+
+    <div>
+        <label>Set new password (optional)</label>
+        <input asp-for="SetNewPassword" type="password" />
+    </div>
+    <div>
+        <label>Force change on next login</label>
+        <input asp-for="ForceChangeOnNextLogin" type="checkbox" />
+    </div>
+
+    <hr />
+
+    <div>
+        <label>Rola:</label>
+        <select name="SelectedRole">
+            @foreach (var r in ViewBag.AllRoles as IEnumerable<string> ?? new List<string>())
+            {
+                if ((ViewBag.UserRole as string) == r)
+                {
+                    <option value="@r" selected>@r</option>
+                }
+                else
+                {
+                    <option value="@r">@r</option>
+                }
+            }
+        </select>
+    </div>
+
+
+    <div>
+        <button type="submit">Save</button>
+    </div>
+
+    <label>Role:
+        <select name="role">
+            <option value="User">User</option>
+            <option value="Manager">Manager</option>
+            <option value="Admin">Admin</option>
+        </select>
+    </label>
+
+<label>Roles</label>
+<div>
+<label><input type="checkbox" name="roles" value="User"/> User</label>
+<label><input type="checkbox" name="roles" value="Manager"/> Manager</label>
+<label><input type="checkbox" name="roles" value="Admin"/> Admin</label>
+</div>
+</form>
+
+<form method="post" asp-action="GenerateOTP" asp-controller="Admin" style="margin-top:10px;">
+    <input type="hidden" name="username" value="@Model.Username" />
+    <button type="submit">Generuj OTP (x)</button>
+
+    <label>Role:
+        <select name="role">
+            <option value="User">User</option>
+            <option value="Manager">Manager</option>
+            <option value="Admin">Admin</option>
+        </select>
+    </label>
+
+<label>Roles</label>
+<div>
+<label><input type="checkbox" name="roles" value="User"/> User</label>
+<label><input type="checkbox" name="roles" value="Manager"/> Manager</label>
+<label><input type="checkbox" name="roles" value="Admin"/> Admin</label>
+</div>
+</form>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div style="color:red">
+        @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <div>@err.ErrorMessage</div>
+        }
+    </div>
+}

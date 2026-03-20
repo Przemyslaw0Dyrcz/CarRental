@@ -1,0 +1,98 @@
+@model CarRental.Models.Car
+@using CarRental.Models
+
+<h2 class="mb-4">Edit Car</h2>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<div class="row">
+
+    <div class="col-md-6">
+
+        <form asp-action="Edit" method="post">
+
+            <input type="hidden" asp-for="Id" />
+
+            <div class="mb-3">
+                <label>Brand</label>
+                <input asp-for="Brand" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label>Model</label>
+                <input asp-for="Model" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label>Year</label>
+                <input asp-for="Year" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label>Price per day (z³)</label>
+                <input asp-for="PricePerDay" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label>Seats</label>
+                <input asp-for="Seats" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label>Engine capacity (L)</label>
+                <input asp-for="EngineCapacity" class="form-control" />
+            </div>
+
+            <button class="btn btn-primary w-100">Save changes</button>
+
+        </form>
+
+    </div>
+
+    <div class="col-md-6">
+
+        <div class="card shadow-sm p-3">
+
+            <h5>Status management</h5>
+
+            <p>
+                Current status:
+                <span class="badge bg-secondary">@Model.Status</span>
+            </p>
+
+            <form asp-action="UpdateStatus" method="post">
+
+                <input type="hidden" name="carId" value="@Model.Id" />
+
+                <div class="mb-3">
+                    <label>Change status</label>
+
+                    <select name="status" class="form-control">
+
+                        <option value="Available">Available</option>
+                        <option value="Reserved">Reserved</option>
+                        <option value="Maintenance">Maintenance</option>
+                        <option value="Disabled">Disabled</option>
+
+                    </select>
+                </div>
+
+                <button class="btn btn-warning w-100">
+                    Update Status
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>

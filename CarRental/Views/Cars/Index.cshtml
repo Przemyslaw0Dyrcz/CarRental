@@ -1,0 +1,59 @@
+@model IEnumerable<CarRental.Models.Car>
+@using CarRental.Models
+
+<h1 class="mb-4">Available Cars</h1>
+
+<div class="row">
+    @foreach (var car in Model)
+    {
+        <div class="col-md-4 mb-4">
+
+            <a asp-controller="Cars"
+               asp-action="Details"
+               asp-route-id="@car.Id"
+               style="text-decoration:none; color:inherit;">
+
+                <div class="card shadow-sm h-100 hover-card">
+
+                    <img src="/images/car-placeholder.png"
+                         class="card-img-top"
+                         style="height:180px; object-fit:cover;" />
+
+                    <div class="card-body">
+
+                        <h5>@car.Brand @car.Model</h5>
+                        <p class="text-muted">@car.Year</p>
+
+                        <p>
+                            <strong>@car.PricePerDay z³ / day</strong>
+                        </p>
+
+                        <span class="badge
+                            @(car.Status == CarStatus.Available ? "bg-success" :
+                                                        car.Status == CarStatus.Reserved ? "bg-danger" :
+                                                        car.Status == CarStatus.Maintenance ? "bg-warning" :
+                                                        "bg-secondary")">
+                        @car.Status
+                    </span>
+
+                    </div>
+
+                </div>
+
+            </a>
+
+        </div>
+        }
+</div>
+
+<style>
+    .hover-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        cursor: pointer;
+    }
+
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+</style>

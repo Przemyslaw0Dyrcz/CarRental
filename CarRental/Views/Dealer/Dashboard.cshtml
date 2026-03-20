@@ -1,0 +1,132 @@
+﻿@model IEnumerable<CarRental.Models.Car>
+@using CarRental.Models
+
+<h2 class="mb-4">Dealer Dashboard</h2>
+
+<div class="row mb-4 text-center">
+
+    <div class="col-md-3">
+        <div class="card shadow-sm p-3 border-0">
+            <h6 class="text-muted">Total Cars</h6>
+            <h2 class="fw-bold">@Model.Count()</h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm p-3 border-0">
+            <h6 class="text-muted">Available</h6>
+            <h2 class="fw-bold text-success">
+                @Model.Count(c => c.Status == CarStatus.Available)
+            </h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm p-3 border-0">
+            <h6 class="text-muted">Reserved</h6>
+            <h2 class="fw-bold text-danger">
+                @Model.Count(c => c.Status == CarStatus.Reserved)
+            </h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm p-3 border-0">
+            <h6 class="text-muted">Maintenance</h6>
+            <h2 class="fw-bold text-warning">
+                @Model.Count(c => c.Status == CarStatus.Maintenance)
+            </h2>
+        </div>
+    </div>
+
+</div>
+
+<div class="d-flex gap-2 mb-3">
+    <a asp-action="Create" class="btn btn-primary">
+        + Add Car
+    </a>
+
+    <a asp-controller="Reservations"
+       asp-action="DealerReservations"
+       class="btn btn-dark">
+        Reservations
+    </a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover shadow-sm bg-white align-middle">
+
+        <thead class="table-dark">
+            <tr>
+                <th>Car</th>
+                <th>Specs</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th style="width:180px;">Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var car in Model)
+            {
+                var statusClass = car.Status == CarStatus.Available
+                ? "bg-success"
+                : car.Status == CarStatus.Reserved
+                ? "bg-danger"
+                : car.Status == CarStatus.Maintenance
+                ? "bg-warning text-dark"
+                : "bg-secondary";
+
+                <tr>
+                    <td>
+                        <strong>@car.Brand @car.Model</strong>
+                        <div class="text-muted small">@car.Year</div>
+                    </td>
+
+                    <td>
+                        <div class="small">
+                            👥 @car.Seats seats<br />
+                            ⚙️ @car.EngineCapacity L<br />
+                            🐎 @car.Horsepower HP
+                        </div>
+                    </td>
+
+                    <td>
+                        <span class="fw-bold">@car.PricePerDay zł</span>
+                        <div class="text-muted small">/ day</div>
+                    </td>
+
+                    <td>
+                        <span class="badge @statusClass px-3 py-2">
+                            @car.Status
+                        </span>
+                    </td>
+
+                    <td>
+                        <div class="d-flex gap-2">
+
+                            <a asp-action="Edit"
+                               asp-route-id="@car.Id"
+                               class="btn btn-sm btn-warning">
+                                Edit
+                            </a>
+
+                            <form asp-action="Delete"
+                                  method="post"
+                                  onsubmit="return confirm('Delete this car?')">
+
+                                <input type="hidden" name="id" value="@car.Id" />
+
+                                <button class="btn btn-sm btn-danger">
+                                    Delete
+                                </button>
+                            </form>
+
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+</div>

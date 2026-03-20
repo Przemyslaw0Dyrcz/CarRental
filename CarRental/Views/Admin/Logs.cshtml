@@ -1,0 +1,29 @@
+@model IEnumerable<CarRental.Models.ActivityLog>
+
+<h2>Activity Logs</h2>
+
+<table class="table table-striped">
+
+    <thead>
+        <tr>
+            <th>Time</th>
+            <th>User</th>
+            <th>Action</th>
+            <th>Details</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @foreach (var log in Model)
+        {
+            <tr>
+                <td>@log.Timestamp</td>
+                <td>@log.UserName</td>
+                <td>@log.Action</td>
+                <td>@log.Description</td>
+            </tr>
+        }
+
+    </tbody>
+</table>

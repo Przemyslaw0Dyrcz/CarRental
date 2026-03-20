@@ -1,0 +1,104 @@
+﻿@model IEnumerable<CarRental.ViewModels.MyReservationViewModel>
+@using CarRental.Models
+
+<h2 class="mb-4">My Reservations</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        You have no reservations yet.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+
+        <table class="table table-striped shadow-sm bg-white align-middle">
+
+            <thead class="table-dark">
+                <tr>
+                    <th>Car</th>
+                    <th>Dates</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                    <th>Payment</th>
+                    <th style="width:140px;">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var r in Model)
+                {
+                    var statusClass = r.Status == ReservationStatus.Pending
+                    ? "bg-warning"
+                    : r.Status == ReservationStatus.Cancelled
+                    ? "bg-danger"
+                    : r.Status == ReservationStatus.Active
+                    ? "bg-success"
+                    : "bg-secondary";
+
+                    var paymentClass = r.PaymentStatus == PaymentStatus.Paid
+                    ? "bg-success"
+                    : r.PaymentStatus == PaymentStatus.Failed
+                    ? "bg-danger"
+                    : "bg-secondary";
+
+                    <tr>
+
+                        <td>
+                            <strong>@r.CarName</strong>
+                        </td>
+
+                        <td>
+                            <div>@r.FromDate.ToString("dd.MM.yyyy")</div>
+                            <div class="text-muted small">
+                                → @r.ToDate.ToString("dd.MM.yyyy")
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="fw-bold">@r.TotalPrice zł</span>
+                        </td>
+
+                        <td>
+                            <span class="badge @statusClass px-3 py-2">
+                                @r.Status
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="badge @paymentClass px-3 py-2">
+                                @r.PaymentStatus
+                            </span>
+                        </td>
+
+                        <td>
+                            @if (r.Status == ReservationStatus.Pending && r.FromDate > DateTime.UtcNow)
+                            {
+                                <form asp-controller="Reservations"
+                                      asp-action="Cancel"
+                                      method="post">
+
+                                    <input type="hidden" name="id" value="@r.Id" />
+
+                                    <button type="submit"
+                                            class="btn btn-sm btn-danger w-100"
+                                            onclick="return confirm('Cancel this reservation?')">
+                                        Cancel
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">Not available</span>
+                            }
+                        </td>
+
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+
+    </div>
+}

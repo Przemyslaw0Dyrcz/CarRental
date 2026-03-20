@@ -399,3 +399,25 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+#  Secrets / config
+appsettings.Production.json
+appsettings.*.json
+
+# wyjątek – zostaw podstawowy config
+!appsettings.json
+
+#  Logs
+logs/
+*.log
+
+# Baza lokalna (jeśli masz)
+*.db
+*.sqlite
+
+# Env files
+.env
+.env.*
+
+
+publish/

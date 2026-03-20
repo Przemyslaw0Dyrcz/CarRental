@@ -1,0 +1,93 @@
+@model CarRental.ViewModels.CreateReservationDto
+
+<h2 class="mb-4">Create Reservation (Dealer)</h2>
+
+<form asp-action="CreateForCustomer" method="post">
+
+    <div class="mb-3">
+        <label>Select Customer</label>
+        <input type="text" id="userSearch" class="form-control" placeholder="Search user..." />
+
+        <ul id="userList" class="list-group mt-2" style="max-height:200px; overflow:auto;">
+            @foreach (var user in ViewBag.Users)
+            {
+                <li class="list-group-item user-item"
+                    data-id="@user.Id"
+                    data-name="@user.UserName">
+                    @user.UserName (@user.Email)
+                </li>
+            }
+        </ul>
+
+        <input type="hidden" asp-for="UserId" id="selectedUserId" />
+    </div>
+
+    <div class="mb-3">
+        <label>Select Car</label>
+        <select asp-for="CarId" class="form-control" id="carSelect">
+            <option value="">-- Select car --</option>
+            @foreach (var car in ViewBag.Cars)
+            {
+                <option value="@car.Id">
+                    @car.Brand @car.Model (@car.Id)
+                </option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label>Start Date</label>
+        <input asp-for="StartDate" type="datetime-local" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>End Date</label>
+        <input asp-for="EndDate" type="datetime-local" class="form-control" />
+    </div>
+
+    <button class="btn btn-primary">Create</button>
+</form>
+
+@section Scripts {
+    <script>
+        const search = document.getElementById("userSearch");
+        const items = document.querySelectorAll(".user-item");
+        const hiddenInput = document.getElementById("selectedUserId");
+        const form = document.querySelector("form");
+        const carSelect = document.getElementById("carSelect");
+
+        search.addEventListener("keyup", function () {
+            const value = this.value.toLowerCase();
+
+            items.forEach(item => {
+                const name = item.dataset.name.toLowerCase();
+                item.style.display = name.includes(value) ? "" : "none";
+            });
+        });
+
+        items.forEach(item => {
+            item.addEventListener("click", function () {
+                hiddenInput.value = this.dataset.id;
+                search.value = this.dataset.name;
+
+                items.forEach(i => i.classList.remove("active"));
+                this.classList.add("active");
+            });
+        });
+
+        form.addEventListener("submit", function (e) {
+
+            if (!hiddenInput.value) {
+                e.preventDefault();
+                alert("Select user first!");
+                return;
+            }
+
+            if (!carSelect.value) {
+                e.preventDefault();
+                alert("Select car!");
+                return;
+            }
+        });
+    </script>
+}

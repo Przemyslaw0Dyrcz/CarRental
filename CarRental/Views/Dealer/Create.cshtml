@@ -1,0 +1,45 @@
+﻿@model CarRental.Models.Car
+
+<h2 class="mb-4">Add New Car</h2>
+
+<form asp-action="Create" method="post">
+
+    <div class="mb-3">
+        <label>Brand</label>
+        <input asp-for="Brand" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Model</label>
+        <input asp-for="Model" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Year</label>
+        <input asp-for="Year" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Price per day</label>
+        <input asp-for="PricePerDay" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Seats</label>
+        <input asp-for="Seats" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Engine capacity (L)</label>
+        <input asp-for="EngineCapacity" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Horsepower</label>
+        <input asp-for="Horsepower" class="form-control" />
+    </div>
+
+    <button class="btn btn-success">Save</button>
+    <a asp-action="Dashboard" class="btn btn-secondary">Back</a>
+
+</form>

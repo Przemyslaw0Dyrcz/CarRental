@@ -1,0 +1,107 @@
+@model List<CarRental.ViewModels.UserRoleViewModel>
+
+<h2>User Management</h2>
+
+<a asp-action="CreateUser" class="btn btn-primary mb-3">
+    Create User
+</a>
+
+<table class="table table-striped">
+
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>UserName</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @foreach (var user in Model)
+        {
+            <tr>
+
+                <td>
+                    @user.Email
+                </td>
+
+                <td>
+                    @user.UserName
+                </td>
+
+                <td>
+
+                    <form asp-action="ChangeRole" method="post" class="d-flex gap-2">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" name="userId" value="@user.Id" />
+
+                        <select name="role" class="form-select form-select-sm w-auto">
+
+                            <option value="Admin" selected="@(user.Role == "Admin")">
+                                Admin
+                            </option>
+
+                            <option value="Dealer" selected="@(user.Role == "Dealer")">
+                                Dealer
+                            </option>
+
+                            <option value="User" selected="@(user.Role == "User")">
+                                User
+                            </option>
+
+                        </select>
+
+                        <button class="btn btn-primary btn-sm">
+                            Change
+                        </button>
+
+                    </form>
+
+                </td>
+
+                <td>
+
+                    @if (user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.Now)
+                    {
+                        <span class="badge bg-danger">Locked</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Active</span>
+                    }
+
+                </td>
+
+                <td>
+
+                    <form asp-action="LockUser" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="userId" value="@user.Id" />
+                        <button class="btn btn-warning btn-sm">Lock</button>
+                    </form>
+
+                    <form asp-action="UnlockUser" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="userId" value="@user.Id" />
+                        <button class="btn btn-success btn-sm">Unlock</button>
+                    </form>
+
+                    <form asp-action="Delete" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="userId" value="@user.Id" />
+                        <button class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+
+                </td>
+
+            </tr>
+        }
+
+    </tbody>
+
+</table>

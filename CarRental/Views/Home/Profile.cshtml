@@ -1,0 +1,11 @@
+@model CarRental.Models.UserProfileViewModel
+
+<h2>Profile</h2>
+
+<table class="table">
+    <tr><th>Username</th><td>@Model.UserName</td></tr>
+    <tr><th>Email</th><td>@Model.Email</td></tr>
+    <tr><th>Full name</th><td>@Model.FullName</td></tr>
+    <tr><th>Roles</th><td>@Model.Roles</td></tr>
+    <tr><th>Lockout</th><td>@Model.LockoutEnd</td></tr>
+</table>

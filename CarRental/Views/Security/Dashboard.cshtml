@@ -1,0 +1,18 @@
+@model IEnumerable<CarRental.Models.ActivityLog>
+@{
+    ViewData["Title"]="Security Dashboard";
+}
+<h1>Security Dashboard</h1>
+<div>
+<p>Total Logins: @ViewBag.Logins</p>
+<p>Failed Logins: @ViewBag.Failed</p>
+<p>Alerts: @ViewBag.Alerts</p>
+</div>
+<table class="table">
+<thead><tr><th>Time</th><th>User</th><th>Action</th><th>Description</th></tr></thead>
+<tbody>
+@foreach(var l in Model){
+<tr><td>@l.Timestamp</td><td>@l.UserName</td><td>@l.Action</td><td>@l.Description</td></tr>
+}
+</tbody>
+</table>

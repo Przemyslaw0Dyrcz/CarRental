@@ -1,0 +1,77 @@
+﻿@model IEnumerable<CarRental.ViewModels.DealerReservationViewModel>
+
+<h2 class="mb-4">Reservations</h2>
+
+<a asp-controller="Reservations" asp-action="CreateForCustomer" class="btn btn-primary mb-3">
+    + Create Reservation
+</a>
+
+<table class="table table-striped shadow-sm bg-white">
+    <thead class="table-dark">
+        <tr>
+            <th>Car</th>
+            <th>User</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var r in Model)
+        {
+            var statusClass = r.Status == ReservationStatus.Pending
+            ? "bg-warning"
+            : r.Status == ReservationStatus.Active
+            ? "bg-success"
+            : r.Status == ReservationStatus.Completed
+            ? "bg-secondary"
+            : "bg-danger";
+
+            <tr>
+                <td><strong>@r.CarName</strong></td>
+                <td>@r.UserId</td>
+                <td>@r.FromDate.ToShortDateString()</td>
+                <td>@r.ToDate.ToShortDateString()</td>
+
+                <td>
+                    <span class="badge @statusClass">
+                        @r.Status
+                    </span>
+                </td>
+
+                <td>
+                    @if (r.Status == ReservationStatus.Pending)
+                    {
+                        <form asp-controller="Reservations" asp-action="Start" method="post" style="display:inline">
+                            <input type="hidden" name="id" value="@r.Id" />
+                            <button class="btn btn-sm btn-success">Start</button>
+                        </form>
+                        <form asp-controller="Reservations"asp-action="Cancel" method="post" style="display:inline">
+
+                            <input type="hidden" name="id" value="@r.Id" />
+
+                            <button class="btn btn-sm btn-danger">Cancel</button>
+                        </form>
+                    }
+
+                    @if (r.Status == ReservationStatus.Active)
+                    {
+                        <form asp-controller="Reservations" asp-action="Complete" method="post" style="display:inline">
+                            <input type="hidden" name="id" value="@r.Id" />
+                            <button class="btn btn-sm btn-primary">Complete</button>
+                        </form>
+
+
+
+                        <form asp-controller="Reservations" asp-action="EndEarly" method="post" style="display:inline">
+                            <input type="hidden" name="id" value="@r.Id" />
+                            <button class="btn btn-sm btn-warning">End Early</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

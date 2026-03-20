@@ -1,0 +1,31 @@
+@model CarRental.ViewModels.LoginViewModel
+
+<h2>Login</h2>
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<form method="post" asp-action="Login" asp-controller="Account">
+
+    <div class="mb-3">
+        <label asp-for="Username" class="form-label"></label>
+        <input asp-for="Username" class="form-control" />
+        <span asp-validation-for="Username" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Password" class="form-label"></label>
+        <input asp-for="Password" class="form-control" type="password" />
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Login</button>
+</form>
+
+<p>
+    Don't have an account?
+    <a asp-controller="Account" asp-action="Register">Register</a>
+</p>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

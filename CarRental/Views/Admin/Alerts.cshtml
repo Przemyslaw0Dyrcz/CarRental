@@ -1,0 +1,27 @@
+@model IEnumerable<CarRental.Models.ActivityLog>
+
+<h2>Security Alerts</h2>
+
+<table class="table table-bordered">
+
+    <thead>
+        <tr>
+            <th>Time</th>
+            <th>Action</th>
+            <th>Details</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @foreach (var alert in Model)
+        {
+            <tr class="table-danger">
+                <td>@alert.Timestamp</td>
+                <td>@alert.Action</td>
+                <td>@alert.Description </td>
+            </tr>
+        }
+
+    </tbody>
+</table>

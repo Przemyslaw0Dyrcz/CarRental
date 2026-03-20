@@ -1,0 +1,121 @@
+@model CarRental.ViewModels.SecurityDashboardViewModel
+
+<h2 class="mb-4">Security Operations Center</h2>
+
+<div class="row g-3">
+
+    <div class="col-md-3">
+        <div class="card bg-danger text-white shadow">
+            <div class="card-body">
+                <h6>Failed Logins</h6>
+                <h3>@Model.FailedLogins</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark shadow">
+            <div class="card-body">
+                <h6>Security Alerts</h6>
+                <h3>@Model.Alerts</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-primary text-white shadow">
+            <div class="card-body">
+                <h6>Total Users</h6>
+                <h3>@Model.Users</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-success text-white shadow">
+            <div class="card-body">
+                <h6>Reservations</h6>
+                <h3>@Model.Reservations</h3>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<div class="row mt-4">
+
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-body">
+
+                <h5>Login Attempts (last days)</h5>
+
+                <canvas id="loginChart"></canvas>
+
+            </div>
+        </div>
+    </div>
+
+
+    <div class="col-md-4">
+        <div class="card shadow">
+            <div class="card-body">
+
+                <h5>Top Attacking IP</h5>
+
+                <table class="table table-sm">
+
+                    <thead>
+                        <tr>
+                            <th>IP</th>
+                            <th>Attempts</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var ip in Model.TopAttackers)
+                        {
+                            <tr>
+                                <td>@ip.Ip</td>
+                                <td>@ip.Attempts</td>
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+
+        const labels = @Html.Raw(Json.Serialize(Model.ChartLabels));
+        const data = @Html.Raw(Json.Serialize(Model.ChartData));
+
+        new Chart(document.getElementById('loginChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Failed logins',
+                    data: data,
+                    borderColor: 'red',
+                    backgroundColor: 'rgba(255,0,0,0.2)',
+                    tension: 0.3
+                }]
+            }
+        });
+
+    </script>
+
+}

@@ -1,0 +1,57 @@
+@model CarRental.ViewModels.PaginationViewModel
+
+@if (Model == null)
+{
+    return;
+}
+
+@{
+    int currentPage = Model.Page;
+    int pageSize = Model.PageSize;
+    int total = Model.Total;
+    int totalPages = (int)Math.Ceiling((double)total / pageSize);
+}
+
+<nav class="d-flex justify-content-between align-items-center">
+    <small>Strona @currentPage z @totalPages (łącznie @total)</small>
+
+    <ul class="pagination mb-0">
+
+        @if (currentPage > 1)
+        {
+            <li class="page-item">
+                <a class="page-link"
+                   asp-action="@Model.Action"
+                   asp-route-page="@(currentPage - 1)"
+                   asp-route-search="@Model.Search">
+                    Poprzednia
+                </a>
+            </li>
+        }
+
+        @for (int p = 1; p <= totalPages; p++)
+        {
+            <li class="page-item @(p == currentPage ? "active" : "")">
+                <a class="page-link"
+                   asp-action="@Model.Action"
+                   asp-route-page="@p"
+                   asp-route-search="@Model.Search">
+                    @p
+                </a>
+            </li>
+        }
+
+        @if (currentPage < totalPages)
+        {
+            <li class="page-item">
+                <a class="page-link"
+                   asp-action="@Model.Action"
+                   asp-route-page="@(currentPage + 1)"
+                   asp-route-search="@Model.Search">
+                    Następna
+                </a>
+            </li>
+        }
+
+    </ul>
+</nav>
