@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using CarRental.Services;
 using CarRental.Middleware;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -80,7 +81,7 @@ builder.Services.AddScoped<CarAvailabilityService>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<CarRental.Services.AuditService>();
-
+builder.Services.AddApplicationInsightsTelemetry();
 
 
 
