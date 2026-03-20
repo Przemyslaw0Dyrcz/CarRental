@@ -40,7 +40,7 @@ namespace CarRental.Middleware
                     entry = (0, DateTime.UtcNow);
                 }
 
-                attempts[ip] = entry;
+                attempts[ip] = (entry.Count, DateTime.UtcNow);
 
                 if (entry.Count >= settings.MaxLoginAttempts)
                 {
