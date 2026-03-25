@@ -1,6 +1,7 @@
 using CarRental.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using System.Collections.Concurrent;
 
 namespace CarRental.Middleware
@@ -25,7 +26,13 @@ namespace CarRental.Middleware
                 var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
                 var db = context.RequestServices.GetRequiredService<ApplicationDbContext>();
-                var settings = await db.SecuritySettings.FirstOrDefaultAsync();
+                var cache = context.RequestServices.GetRequiredService<IMemoryCache>();
+
+                var settings = await cache.GetOrCreateAsync("security_settings", async entry =>
+                {
+                    entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
+                    return await db.SecuritySettings.FirstOrDefaultAsync();
+                });
 
                 if (settings == null || !settings.EnableBruteForceProtection)
                 {
@@ -34,19 +41,17 @@ namespace CarRental.Middleware
                 }
 
                 var entry = attempts.GetOrAdd(ip, (0, DateTime.UtcNow));
-
                 if (DateTime.UtcNow - entry.Time > TimeSpan.FromMinutes(settings.IpWindowMinutes))
                 {
                     entry = (0, DateTime.UtcNow);
+                    attempts[ip] = entry;
                 }
-
-                attempts[ip] = (entry.Count, DateTime.UtcNow);
 
                 if (entry.Count >= settings.MaxLoginAttempts)
                 {
                     try
                     {
-                     await   CarRental.Services.ActivityLogger.LogAsync(
+                        await CarRental.Services.ActivityLogger.LogAsync(
                             db,
                             context,
                             null,
@@ -57,26 +62,26 @@ namespace CarRental.Middleware
                     catch { }
 
                     context.Response.StatusCode = 429;
-                    await context.Response.WriteAsync("Too many login attempts. Possible brute force.");
+                    await context.Response.WriteAsync("Too many login attempts.");
                     return;
                 }
+
+                await _next(context);
+
+                if (context.Response.StatusCode == 302)
+                {
+                    attempts.TryRemove(ip, out _);
+                }
+                else
+                {
+                    entry.Count++;
+                    attempts[ip] = (entry.Count, DateTime.UtcNow);
+                }
             }
-
-            await _next(context);
-        }
-
-        public static void RegisterFailedAttempt(string ip)
-        {
-            var entry = attempts.GetOrAdd(ip, (0, DateTime.UtcNow));
-
-            entry.Count++;
-
-            attempts[ip] = entry;
-        }
-
-        public static void ResetAttempts(string ip)
-        {
-            attempts.TryRemove(ip, out _);
+            else
+            {
+                await _next(context);
+            }
         }
     }
 }

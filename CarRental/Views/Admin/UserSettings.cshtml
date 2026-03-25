@@ -9,8 +9,11 @@
     </div>
 }
 
+<div asp-validation-summary="All" class="text-danger mb-3"></div>
+
 <form asp-action="UserSettings" method="post">
 
+    ```
     @Html.AntiForgeryToken()
 
     <div class="card shadow-sm p-4">
@@ -28,9 +31,10 @@
             <label asp-for="MaxLoginAttempts" class="form-label">
                 Max Failed Login Attempts (IP)
             </label>
-            <input asp-for="MaxLoginAttempts" class="form-control" />
+            <input asp-for="MaxLoginAttempts" class="form-control" min="1" max="20" />
+            <span asp-validation-for="MaxLoginAttempts" class="text-danger"></span>
             <small class="text-muted">
-                Number of failed login attempts allowed before IP is blocked
+                Number of failed login attempts before IP is temporarily blocked
             </small>
         </div>
 
@@ -38,7 +42,8 @@
             <label asp-for="IpWindowMinutes" class="form-label">
                 IP Attempt Window (minutes)
             </label>
-            <input asp-for="IpWindowMinutes" class="form-control" />
+            <input asp-for="IpWindowMinutes" class="form-control" min="1" max="60" />
+            <span asp-validation-for="IpWindowMinutes" class="text-danger"></span>
             <small class="text-muted">
                 Time window after which failed attempts reset
             </small>
@@ -49,17 +54,14 @@
         <h5 class="mb-3">Account Lockout</h5>
 
         <div class="mb-3">
-            <label asp-for="AccountLockoutAttempts" class="form-label">
-                Failed Attempts Before Account Lock
-            </label>
-            <input asp-for="AccountLockoutAttempts" class="form-control" />
-        </div>
-
-        <div class="mb-3">
             <label asp-for="LockoutMinutes" class="form-label">
                 Account Lock Duration (minutes)
             </label>
-            <input asp-for="LockoutMinutes" class="form-control" />
+            <input asp-for="LockoutMinutes" class="form-control" min="1" max="1440" />
+            <span asp-validation-for="LockoutMinutes" class="text-danger"></span>
+            <small class="text-muted">
+                Duration of account lock after too many failed attempts
+            </small>
         </div>
 
         <hr />
@@ -70,7 +72,11 @@
             <label asp-for="SessionTimeoutMinutes" class="form-label">
                 Session Timeout (minutes)
             </label>
-            <input asp-for="SessionTimeoutMinutes" class="form-control" />
+            <input asp-for="SessionTimeoutMinutes" class="form-control" min="1" max="240" />
+            <span asp-validation-for="SessionTimeoutMinutes" class="text-danger"></span>
+            <small class="text-muted">
+                User will be logged out after inactivity
+            </small>
         </div>
 
         <button class="btn btn-primary mt-2">
@@ -78,5 +84,10 @@
         </button>
 
     </div>
+    ```
 
 </form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

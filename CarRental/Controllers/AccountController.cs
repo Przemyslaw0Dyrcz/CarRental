@@ -3,6 +3,7 @@ using CarRental.Middleware;
 using CarRental.Models;
 using CarRental.Services;
 using CarRental.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +32,7 @@ namespace CarRental.Controllers
             return User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         }
 
+        [Authorize]
         public async Task<IActionResult> Profile()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -88,13 +90,11 @@ namespace CarRental.Controllers
                 model.Username,
                 model.Password,
                 false,
-                true);
+                false);
 
             if (result.Succeeded)
             {
                 var user = await _userManager.FindByNameAsync(model.Username);
-
-                BruteForceDetectionMiddleware.ResetAttempts(ip);
 
                 await ActivityLogger.LogAsync(
                     _context,
@@ -123,8 +123,6 @@ namespace CarRental.Controllers
                 ModelState.AddModelError("", "Account is locked.");
                 return View(model);
             }
-
-            BruteForceDetectionMiddleware.RegisterFailedAttempt(ip);
 
             await ActivityLogger.LogAsync(
                 _context,

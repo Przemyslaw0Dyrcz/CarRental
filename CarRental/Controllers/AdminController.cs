@@ -307,7 +307,8 @@ namespace CarRental.Controllers
                 EnableBruteForceProtection = settings.EnableBruteForceProtection,
                 MaxLoginAttempts = settings.MaxLoginAttempts,
                 SessionTimeoutMinutes = settings.SessionTimeoutMinutes,
-                LockoutMinutes = settings.LockoutMinutes
+                LockoutMinutes = settings.LockoutMinutes,
+                IpWindowMinutes = settings.IpWindowMinutes
             };
 
             return View(model);
@@ -326,6 +327,7 @@ namespace CarRental.Controllers
 
             settings.EnableBruteForceProtection = model.EnableBruteForceProtection;
             settings.MaxLoginAttempts = model.MaxLoginAttempts;
+            settings.IpWindowMinutes = model.IpWindowMinutes;
             settings.SessionTimeoutMinutes = model.SessionTimeoutMinutes;
             settings.LockoutMinutes = model.LockoutMinutes;
 

@@ -53,7 +53,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+    options.ExpireTimeSpan = TimeSpan.FromHours(12); 
     options.SlidingExpiration = true;
     options.LoginPath = "/Account/Login";
     options.AccessDeniedPath = "/Account/AccessDenied";
@@ -66,7 +66,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(1);
+    options.IdleTimeout = TimeSpan.FromHours(12);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
@@ -74,44 +74,16 @@ builder.Services.AddSession(options =>
 #endregion
 
 
-// Register CarRental services
 builder.Services.AddScoped<ICarService, CarService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<CarAvailabilityService>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<CarRental.Services.AuditService>();
+builder.Services.AddScoped<AuditService>();
 builder.Services.AddApplicationInsightsTelemetry();
+builder.Services.AddMemoryCache();
 
 
-
-var jwtKey = builder.Configuration["Jwt:Key"];
-var jwtIssuer = builder.Configuration["Jwt:Issuer"];
-if (!string.IsNullOrEmpty(jwtKey))
-{
-    var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
-    builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    }).AddJwtBearer(options =>
-    {
-        options.RequireHttpsMetadata = false;
-        options.SaveToken = true;
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = false,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtIssuer,
-            IssuerSigningKey = new SymmetricSecurityKey(keyBytes)
-        };
-    });
-}
-else
-{
-    // No JWT key configured - JWT auth disabled (please set Jwt:Key in configuration or env vars).
-}
 var app = builder.Build();
 
 #region Middleware Pipeline
@@ -124,16 +96,13 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-app.UseMiddleware<CarRental.Middleware.LoginRateLimitMiddleware>();
-
 app.UseSession();
-app.UseMiddleware<CarRental.Middleware.SessionTimeoutMiddleware>();
-
-app.UseMiddleware<CarRental.Middleware.BruteForceDetectionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<CarRental.Middleware.SessionTimeoutMiddleware>();
+app.UseMiddleware<CarRental.Middleware.BruteForceDetectionMiddleware>();
+
 
 #endregion
 
