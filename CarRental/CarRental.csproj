@@ -8,6 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Services\Interfaces\**" />
+    <Compile Remove="Services\Nowy folder\**" />
+    <Content Remove="Services\Interfaces\**" />
+    <Content Remove="Services\Nowy folder\**" />
+    <EmbeddedResource Remove="Services\Interfaces\**" />
+    <EmbeddedResource Remove="Services\Nowy folder\**" />
+    <None Remove="Services\Interfaces\**" />
+    <None Remove="Services\Nowy folder\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="3.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.0" />

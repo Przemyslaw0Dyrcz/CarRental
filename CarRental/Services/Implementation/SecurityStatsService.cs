@@ -1,8 +1,9 @@
-
 using CarRental.Data;
 using System.Linq;
+using CarRental.Services.Interface;
+using CarRental.Services.Implementation;
 
-namespace CarRental.Services
+namespace CarRental.Services.Implementation
 {
     public class SecurityStatsService
     {

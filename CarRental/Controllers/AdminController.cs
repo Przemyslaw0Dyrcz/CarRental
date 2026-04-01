@@ -1,15 +1,12 @@
 using CarRental.Data;
 using CarRental.Models;
-using CarRental.Services;
+using CarRental.Services.Interface;
 using CarRental.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace CarRental.Controllers
 {
@@ -17,14 +14,18 @@ namespace CarRental.Controllers
     public class AdminController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly ApplicationDbContext _context;
+        private readonly IAdminService _adminService;
+        private readonly IActivityLogger _logger;
 
         public AdminController(
             UserManager<ApplicationUser> userManager,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            IAdminService adminService,
+            IActivityLogger logger)
         {
             _userManager = userManager;
-            _context = context;
+            _adminService = adminService;
+            _logger = logger;
         }
 
         private string? GetUserId()
@@ -87,10 +88,8 @@ namespace CarRental.Controllers
             await _userManager.RemoveFromRolesAsync(user, currentRoles);
             await _userManager.AddToRoleAsync(user, role);
 
-            await ActivityLogger.LogAsync(
-                _context,
-                HttpContext,
-                adminId,
+            await _logger.LogAsync(
+                adminId ?? "unknown",
                 "ADMIN_ROLE_CHANGED",
                 $"Changed role of {user.Email} to {role}"
             );
@@ -112,10 +111,8 @@ namespace CarRental.Controllers
                 DateTimeOffset.UtcNow.AddYears(100)
             );
 
-            await ActivityLogger.LogAsync(
-                _context,
-                HttpContext,
-                adminId,
+            await _logger.LogAsync(
+                adminId ?? "unknown",
                 "ADMIN_LOCK_USER",
                 $"Locked user {user.Email}"
             );
@@ -134,10 +131,8 @@ namespace CarRental.Controllers
 
             await _userManager.SetLockoutEndDateAsync(user, null);
 
-            await ActivityLogger.LogAsync(
-                _context,
-                HttpContext,
-                adminId,
+            await _logger.LogAsync(
+                adminId ?? "unknown",
                 "ADMIN_UNLOCK_USER",
                 $"Unlocked user {user.Email}"
             );
@@ -153,13 +148,12 @@ namespace CarRental.Controllers
 
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null) return NotFound();
-
+            if (user.Id == adminId)
+    throw new InvalidOperationException("Cannot delete yourself");
             await _userManager.DeleteAsync(user);
 
-            await ActivityLogger.LogAsync(
-                _context,
-                HttpContext,
-                adminId,
+            await _logger.LogAsync(
+                adminId ?? "unknown",
                 "ADMIN_DELETE_USER",
                 $"Deleted user {user.Email}"
             );
@@ -179,10 +173,8 @@ namespace CarRental.Controllers
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             await _userManager.ResetPasswordAsync(user, token, newPassword);
 
-            await ActivityLogger.LogAsync(
-                _context,
-                HttpContext,
-                adminId,
+            await _logger.LogAsync(
+                adminId ?? "unknown",
                 "ADMIN_RESET_PASSWORD",
                 $"Reset password for {user.Email}"
             );
@@ -217,10 +209,8 @@ namespace CarRental.Controllers
             {
                 await _userManager.AddToRoleAsync(user, "User");
 
-                await ActivityLogger.LogAsync(
-                    _context,
-                    HttpContext,
-                    adminId,
+                await _logger.LogAsync(
+                    adminId ?? "unknown",
                     "ADMIN_CREATE_USER",
                     $"Created user {user.Email}"
                 );
@@ -236,81 +226,25 @@ namespace CarRental.Controllers
 
         public async Task<IActionResult> Logs()
         {
-            var logs = await _context.ActivityLogs
-                .OrderByDescending(x => x.Timestamp)
-                .Take(200)
-                .ToListAsync();
-
+            var logs = await _adminService.GetLogsAsync();
             return View(logs);
         }
 
         public async Task<IActionResult> SecurityDashboard()
         {
-            var failedLogins = await _context.ActivityLogs
-                .Where(x => x.Action == "LOGIN_FAILED")
-                .ToListAsync();
-
-            var alerts = await _context.ActivityLogs
-                .Where(x =>
-                    x.Action.Contains("BRUTE_FORCE") ||
-                    x.Action.Contains("LOCK") ||
-                    x.Action.Contains("ALERT"))
-                .ToListAsync();
-
-            var recent = await _context.ActivityLogs
-                .OrderByDescending(x => x.Timestamp)
-                .Take(20)
-                .ToListAsync();
-
-            var model = new SecurityDashboardViewModel
-            {
-                FailedLogins = failedLogins.Count,
-                Alerts = alerts.Count,
-                Users = await _context.Users.CountAsync(),
-                Reservations = await _context.Reservations.CountAsync(),
-
-                FailedLoginEvents = failedLogins.Take(20).ToList(),
-                AlertEvents = alerts.Take(20).ToList(),
-                RecentEvents = recent
-            };
-
+            var model = await _adminService.GetSecurityDashboardAsync();
             return View(model);
         }
 
-        public IActionResult Alerts()
+        public async Task<IActionResult> Alerts()
         {
-            var alerts = _context.ActivityLogs
-                .Where(x =>
-                    x.Action.Contains("BRUTE_FORCE") ||
-                    x.Action.Contains("LOCK") ||
-                    x.Action.Contains("ALERT"))
-                .OrderByDescending(x => x.Timestamp)
-                .Take(200)
-                .ToList();
-
+            var alerts = await _adminService.GetAlertsAsync();
             return View(alerts);
         }
 
         public async Task<IActionResult> UserSettings()
         {
-            var settings = await _context.SecuritySettings.FirstOrDefaultAsync();
-
-            if (settings == null)
-            {
-                settings = new SecuritySettings();
-                _context.SecuritySettings.Add(settings);
-                await _context.SaveChangesAsync();
-            }
-
-            var model = new SecuritySettingsViewModel
-            {
-                EnableBruteForceProtection = settings.EnableBruteForceProtection,
-                MaxLoginAttempts = settings.MaxLoginAttempts,
-                SessionTimeoutMinutes = settings.SessionTimeoutMinutes,
-                LockoutMinutes = settings.LockoutMinutes,
-                IpWindowMinutes = settings.IpWindowMinutes
-            };
-
+            var model = await _adminService.GetSettingsAsync();
             return View(model);
         }
 
@@ -323,20 +257,10 @@ namespace CarRental.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var settings = await _context.SecuritySettings.FirstAsync();
+            await _adminService.UpdateSettingsAsync(model);
 
-            settings.EnableBruteForceProtection = model.EnableBruteForceProtection;
-            settings.MaxLoginAttempts = model.MaxLoginAttempts;
-            settings.IpWindowMinutes = model.IpWindowMinutes;
-            settings.SessionTimeoutMinutes = model.SessionTimeoutMinutes;
-            settings.LockoutMinutes = model.LockoutMinutes;
-
-            await _context.SaveChangesAsync();
-
-            await ActivityLogger.LogAsync(
-                _context,
-                HttpContext,
-                adminId,
+            await _logger.LogAsync(
+                adminId ?? "unknown",
                 "SECURITY_SETTINGS_CHANGED",
                 "Admin updated security configuration"
             );

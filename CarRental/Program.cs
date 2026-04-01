@@ -1,14 +1,13 @@
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using CarRental.Data;
 using CarRental.Models;
+using CarRental.Repositories.Implementation;
+using CarRental.Repositories.Interface;
+using CarRental.Services.Implementation;
+using CarRental.Services.Interface;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using CarRental.Services;
-using CarRental.Middleware;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,7 +52,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.ExpireTimeSpan = TimeSpan.FromHours(12); 
+    options.ExpireTimeSpan = TimeSpan.FromHours(12);
     options.SlidingExpiration = true;
     options.LoginPath = "/Account/Login";
     options.AccessDeniedPath = "/Account/AccessDenied";
@@ -76,13 +75,17 @@ builder.Services.AddSession(options =>
 
 builder.Services.AddScoped<ICarService, CarService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
+builder.Services.AddScoped<ICarRepository, CarRepository>();
+builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+builder.Services.AddScoped<ICarImageRepository, CarImageRepository>();
+builder.Services.AddScoped<IActivityLogger, ActivityLoggerService>();
 builder.Services.AddScoped<CarAvailabilityService>();
-builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<AuditService>();
-builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.AddMemoryCache();
-
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddAuthorization();
+builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
@@ -94,7 +97,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+
 app.UseStaticFiles();
 app.UseRouting();
 app.UseSession();
@@ -111,9 +114,10 @@ app.UseMiddleware<CarRental.Middleware.BruteForceDetectionMiddleware>();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var db = services.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
     await SeedData.InitializeAsync(services);
-    await DemoDataSeeder.SeedAsync(
-        services.GetRequiredService<ApplicationDbContext>());
+    await DemoDataSeeder.SeedAsync(db);
 }
 
 #endregion

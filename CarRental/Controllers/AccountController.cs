@@ -1,12 +1,10 @@
 using CarRental.Data;
-using CarRental.Middleware;
 using CarRental.Models;
-using CarRental.Services;
+using CarRental.Services.Interface;
 using CarRental.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace CarRental.Controllers
@@ -15,16 +13,16 @@ namespace CarRental.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly ApplicationDbContext _context;
+        private readonly IActivityLogger _logger;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
-            ApplicationDbContext context)
+            IActivityLogger logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _context = context;
+            _logger = logger;
         }
 
         private string? GetUserId()
@@ -56,9 +54,7 @@ namespace CarRental.Controllers
             if (user == null)
                 return RedirectToAction("Index", "Cars");
 
-            await ActivityLogger.LogAsync(
-                _context,
-                HttpContext,
+            await _logger.LogAsync(
                 user.Id,
                 "ACCOUNT_DELETED",
                 $"User {user.Email} deleted account"
@@ -96,10 +92,8 @@ namespace CarRental.Controllers
             {
                 var user = await _userManager.FindByNameAsync(model.Username);
 
-                await ActivityLogger.LogAsync(
-                    _context,
-                    HttpContext,
-                    user?.Id,
+                await _logger.LogAsync(
+                    user?.Id ?? "unknown",
                     "LOGIN_SUCCESS",
                     $"User logged in from {ip}"
                 );
@@ -112,9 +106,7 @@ namespace CarRental.Controllers
 
             if (result.IsLockedOut)
             {
-                await ActivityLogger.LogAsync(
-                    _context,
-                    HttpContext,
+                await _logger.LogAsync(
                     model.Username,
                     "ACCOUNT_LOCKED",
                     $"Account locked due to failed attempts from {ip}"
@@ -124,9 +116,7 @@ namespace CarRental.Controllers
                 return View(model);
             }
 
-            await ActivityLogger.LogAsync(
-                _context,
-                HttpContext,
+            await _logger.LogAsync(
                 model.Username,
                 "LOGIN_FAILED",
                 $"Invalid login attempt from {ip}"
@@ -167,9 +157,7 @@ namespace CarRental.Controllers
 
                 await _signInManager.SignInAsync(user, false);
 
-                await ActivityLogger.LogAsync(
-                    _context,
-                    HttpContext,
+                await _logger.LogAsync(
                     user.Id,
                     "USER_REGISTERED",
                     $"New user registered: {user.Email}"
@@ -190,10 +178,8 @@ namespace CarRental.Controllers
         {
             var userId = GetUserId();
 
-            await ActivityLogger.LogAsync(
-                _context,
-                HttpContext,
-                userId,
+            await _logger.LogAsync(
+                userId ?? "unknown",
                 "LOGOUT",
                 "User logged out"
             );
@@ -243,9 +229,7 @@ namespace CarRental.Controllers
 
             if (result.Succeeded)
             {
-                await ActivityLogger.LogAsync(
-                    _context,
-                    HttpContext,
+                await _logger.LogAsync(
                     user.Id,
                     "PASSWORD_CHANGED",
                     "User changed password"

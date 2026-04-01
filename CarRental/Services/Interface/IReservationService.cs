@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using CarRental.Models;
 using CarRental.ViewModels;
 
-namespace CarRental.Services
+namespace CarRental.Services.Interface
 {
     public interface IReservationService
     {
@@ -13,5 +10,8 @@ namespace CarRental.Services
         Task CompleteReservationAsync(int id);
         Task EndEarlyAsync(int id);
         Task CancelReservationAsync(string userId, int id);
+        Task<IEnumerable<MyReservationViewModel>> GetUserReservationsAsync(string userId);
+        Task<IEnumerable<Reservation>> GetAllAsync();
+
     }
 }

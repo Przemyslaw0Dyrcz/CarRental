@@ -1,64 +1,69 @@
-using CarRental.Data;
 using CarRental.Models;
+using CarRental.Services.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Security.Claims;
 
 namespace CarRental.Controllers
 {
     [Authorize(Roles = "Dealer,Admin")]
     public class DealerController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ICarService _carService;
+        private readonly IReservationService _reservationService;
+        private readonly IActivityLogger _logger;
 
-        public DealerController(ApplicationDbContext context)
+        public DealerController(
+            ICarService carService,
+            IReservationService reservationService,
+            IActivityLogger logger)
         {
-            _context = context;
+            _carService = carService;
+            _reservationService = reservationService;
+            _logger = logger;
         }
 
-        public IActionResult Index()
+        private string? GetUserId()
         {
-            var cars = _context.Cars.ToList();
+            return User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var cars = await _carService.ListCarsAsync();
             return View(cars);
         }
 
-        public IActionResult Dashboard()
+        public async Task<IActionResult> Dashboard()
         {
-            var cars = _context.Cars.ToList();
+            var cars = await _carService.ListCarsAsync();
             return View(cars);
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateStatus(Guid carId, CarStatus status)
         {
-            var car = await _context.Cars.FindAsync(carId);
+            var userId = GetUserId();
+            if (userId == null)
+                return Unauthorized();
 
-            if (car == null)
-                return NotFound();
-
-            var hasActiveReservation = await _context.Reservations.AnyAsync(r =>
-                r.CarId == carId &&
-                r.Status == ReservationStatus.Active);
-
-            if (status == CarStatus.Available && hasActiveReservation)
+            try
             {
-                TempData["Error"] = "Cannot set Available - car is currently rented";
-                return RedirectToAction(nameof(Edit), new { id = carId });
-            }
+                await _carService.UpdateStatusAsync(carId, status);
 
-            if (status == CarStatus.Maintenance && hasActiveReservation)
+                await _logger.LogAsync(
+                    userId,
+                    "CAR_STATUS_UPDATED",
+                    $"CarId={carId}, Status={status}"
+                );
+
+                TempData["Success"] = "Status updated";
+            }
+            catch (Exception ex)
             {
-                TempData["Error"] = "Cannot send to maintenance during active rental";
-                return RedirectToAction(nameof(Edit), new { id = carId });
+                TempData["Error"] = ex.Message;
             }
-
-            car.Status = status;
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = "Status updated";
 
             return RedirectToAction(nameof(Edit), new { id = carId });
         }
@@ -70,71 +75,90 @@ namespace CarRental.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Car car)
+        public async Task<IActionResult> Create(Car car)
         {
+            var userId = GetUserId();
+
             if (!ModelState.IsValid)
                 return View(car);
 
-            car.Id = Guid.NewGuid();
+            await _carService.AddCarAsync(car);
 
-            _context.Cars.Add(car);
-            _context.SaveChanges();
+            await _logger.LogAsync(
+                userId,
+                "CAR_CREATED",
+                $"CarId={car.Id}"
+            );
 
             return RedirectToAction(nameof(Index));
         }
 
         public async Task<IActionResult> Edit(Guid id)
         {
-            var car = await _context.Cars.FindAsync(id);
+            var car = await _carService.GetCarAsync(id);
 
             if (car == null)
                 return NotFound();
 
             return View(car);
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Car updatedCar)
         {
-            var car = await _context.Cars.FindAsync(updatedCar.Id);
-
-            if (car == null)
-                return NotFound();
+            var userId = GetUserId();
 
             if (!ModelState.IsValid)
                 return View(updatedCar);
 
-            car.Brand = updatedCar.Brand;
-            car.Model = updatedCar.Model;
-            car.Year = updatedCar.Year;
-            car.PricePerDay = updatedCar.PricePerDay;
-            car.Seats = updatedCar.Seats;
-            car.EngineCapacity = updatedCar.EngineCapacity;
+            try
+            {
+                await _carService.UpdateCarAsync(updatedCar);
 
-            await _context.SaveChangesAsync();
+                await _logger.LogAsync(
+                    userId,
+                    "CAR_UPDATED",
+                    $"CarId={updatedCar.Id}"
+                );
 
-            TempData["Success"] = "Car updated";
+                TempData["Success"] = "Car updated";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+            }
 
-            return RedirectToAction(nameof(Edit), new { id = car.Id });
+            return RedirectToAction(nameof(Edit), new { id = updatedCar.Id });
         }
 
-        public IActionResult Delete(Guid id)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(Guid id)
         {
-            var car = _context.Cars.FirstOrDefault(c => c.Id == id);
+            var userId = GetUserId();
 
-            if (car != null)
+            try
             {
-                _context.Cars.Remove(car);
-                _context.SaveChanges();
+                await _carService.RemoveCarAsync(id);
+
+                await _logger.LogAsync(
+                    userId,
+                    "CAR_DELETED",
+                    $"CarId={id}"
+                );
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
             }
 
             return RedirectToAction(nameof(Index));
         }
 
-        [Authorize(Roles = "Dealer,Admin")]
         public async Task<IActionResult> DealerReservations()
         {
-            var reservations = await _context.Reservations.ToListAsync();
+            var reservations = await _reservationService.GetAllAsync();
             return View(reservations);
         }
     }

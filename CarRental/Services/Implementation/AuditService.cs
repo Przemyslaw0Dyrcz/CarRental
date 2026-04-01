@@ -1,11 +1,12 @@
-
+using CarRental.Services.Interface;
+using CarRental.Services.Implementation;
 using System;
 using System.Threading.Tasks;
 using CarRental.Data;
 using CarRental.Models;
 using Microsoft.AspNetCore.Http;
 
-namespace CarRental.Services
+namespace CarRental.Services.Implementation
 {
     public class AuditService
     {

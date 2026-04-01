@@ -1,4 +1,5 @@
 using CarRental.Data;
+using CarRental.Services.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -18,15 +19,16 @@ namespace CarRental.Middleware
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(
+            HttpContext context,
+            ApplicationDbContext db,
+            IMemoryCache cache,
+            IActivityLogger logger)
         {
             if (context.Request.Path.StartsWithSegments("/Account/Login") &&
                 context.Request.Method == "POST")
             {
                 var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-
-                var db = context.RequestServices.GetRequiredService<ApplicationDbContext>();
-                var cache = context.RequestServices.GetRequiredService<IMemoryCache>();
 
                 var settings = await cache.GetOrCreateAsync("security_settings", async entry =>
                 {
@@ -41,6 +43,7 @@ namespace CarRental.Middleware
                 }
 
                 var entry = attempts.GetOrAdd(ip, (0, DateTime.UtcNow));
+
                 if (DateTime.UtcNow - entry.Time > TimeSpan.FromMinutes(settings.IpWindowMinutes))
                 {
                     entry = (0, DateTime.UtcNow);
@@ -49,17 +52,11 @@ namespace CarRental.Middleware
 
                 if (entry.Count >= settings.MaxLoginAttempts)
                 {
-                    try
-                    {
-                        await CarRental.Services.ActivityLogger.LogAsync(
-                            db,
-                            context,
-                            null,
-                            "BRUTE_FORCE_DETECTED",
-                            $"Too many failed login attempts from {ip}"
-                        );
-                    }
-                    catch { }
+                    await logger.LogAsync(
+                        null,
+                        "BRUTE_FORCE_DETECTED",
+                        $"Too many failed login attempts from {ip}"
+                    );
 
                     context.Response.StatusCode = 429;
                     await context.Response.WriteAsync("Too many login attempts.");

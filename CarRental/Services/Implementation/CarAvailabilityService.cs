@@ -4,8 +4,10 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using CarRental.Data;
 using CarRental.Models;
+using CarRental.Services.Interface;
+using CarRental.Services.Implementation;
 
-namespace CarRental.Services
+namespace CarRental.Services.Implementation
 {
     public class CarAvailabilityService
     {

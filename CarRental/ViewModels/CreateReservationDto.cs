@@ -12,5 +12,6 @@ namespace CarRental.ViewModels
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public decimal TotalPrice { get; set; }
+        public int PricePerDay { get; internal set; }
     }
 }

@@ -1,26 +1,17 @@
-using CarRental.Data;
-using CarRental.Models;
-using CarRental.Services;
+using CarRental.Services.Interface;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.IO;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace CarRental.Controllers
 {
     public class CarsController : Controller
     {
         private readonly ICarService _carService;
-        private readonly ApplicationDbContext _context;
 
-        public CarsController(ICarService carService, ApplicationDbContext context)
+        public CarsController(ICarService carService)
         {
             _carService = carService;
-            _context = context;
         }
 
         private string? GetUserId()
@@ -28,7 +19,6 @@ namespace CarRental.Controllers
             return User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         }
 
-        
         [HttpPost]
         [Authorize(Roles = "Dealer,Admin")]
         [ValidateAntiForgeryToken]
@@ -36,54 +26,24 @@ namespace CarRental.Controllers
         {
             var userId = GetUserId();
 
-            if (file == null || file.Length == 0)
-                return BadRequest("No file");
+            if (userId == null)
+                return Unauthorized();
 
-            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-            var ext = Path.GetExtension(file.FileName).ToLower();
-
-            if (!allowedExtensions.Contains(ext))
-                return BadRequest("Invalid file type");
-            if (file.Length > 5 * 1024 * 1024)
-                return BadRequest("File too large");
-
-            var uploads = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-
-            if (!Directory.Exists(uploads))
-                Directory.CreateDirectory(uploads);
-
-            var fileName = Guid.NewGuid() + ext;
-            var path = Path.Combine(uploads, fileName);
-
-            using (var stream = new FileStream(path, FileMode.Create))
+            try
             {
-                await file.CopyToAsync(stream);
+                await _carService.UploadImageAsync(carId, file, userId);
+                return RedirectToAction("Details", new { id = carId });
             }
-
-            var img = new CarImage
+            catch (Exception ex)
             {
-                Id = Guid.NewGuid(),
-                CarId = carId,
-                Url = "/uploads/" + fileName
-            };
-
-            _context.CarImages.Add(img);
-            await _context.SaveChangesAsync();
-
-            await ActivityLogger.LogAsync(
-                _context,
-                HttpContext,
-                userId,
-                "CAR_IMAGE_UPLOADED",
-                $"CarId={carId}, File={fileName}"
-            );
-
-            return RedirectToAction("Details", new { id = carId });
+                return BadRequest(ex.Message);
+            }
         }
 
         public async Task<IActionResult> Index(string q, decimal? minPrice, decimal? maxPrice)
         {
             var cars = await _carService.ListCarsAsync();
+
             var filtered = cars.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(q))
